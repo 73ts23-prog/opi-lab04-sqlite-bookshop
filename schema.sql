@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS products (
     color TEXT NOT NULL CHECK (color IN ('clay', 'forest', 'ochre')),
     price_cents INTEGER NOT NULL CHECK (price_cents > 0),
     stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
-    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1))
+    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+    version INTEGER NOT NULL DEFAULT 1 CHECK (version > 0)
 );
 
 CREATE TABLE IF NOT EXISTS customers (

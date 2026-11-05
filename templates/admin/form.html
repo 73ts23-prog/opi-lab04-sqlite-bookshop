@@ -1,7 +1,7 @@
 {% extends 'admin/base.html' %}
 {% block admin_title %}{{ 'Редагування' if editing else 'Новий запис' }} · {{ label }}{% endblock %}
 {% block admin_content %}
-<form method="post" class="panel form-stack admin-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+<form method="post" class="panel form-stack admin-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% if editing and entity == 'products' %}<input type="hidden" name="version" value="{{ values.get('version', '') }}">{% endif %}{% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
 {% for name, label, type in fields %}<label>{{ label }}{% if type == 'textarea' %}<textarea name="{{ name }}" rows="6" required maxlength="2000">{{ values.get(name, '') }}</textarea>{% else %}<input name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}" {% if name != 'phone' %}required{% endif %} {% if type == 'number' %}min="0" max="10000"{% endif %} maxlength="254">{% endif %}</label>{% endfor %}
 {% if entity == 'products' %}<label>Обкладинка<select name="color">{% for color, label in [('clay','Теракотова'),('forest','Зелена'),('ochre','Охриста')] %}<option value="{{ color }}" {% if values.get('color') == color %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><label class="check-label"><input type="checkbox" name="active" value="1" {% if values.get('active', 1) in [1,'1'] %}checked{% endif %}>Показувати в каталозі</label>{% endif %}
 <div class="form-actions"><button class="button">Зберегти</button><a class="text-link" href="{{ url_for('admin.records', entity=entity) }}">Скасувати</a></div></form>

@@ -51,17 +51,18 @@ class BookshopTests(BaseTestCase):
         self.assertEqual(self.client.get('/admin').status_code, 302)
 
     def test_product_crud(self):
-        """Адміністратор створює, редагує й видаляє товар без замовлень."""
+        """Адміністратор створює, редагує й прибирає товар із каталогу."""
         self.login()
         data = {'title': 'Навчальна книжка', 'author': 'Автор', 'genre': 'Роман', 'color': 'forest', 'price': '123.45', 'stock': '7', 'active': '1'}
         self.assertEqual(self.client.post('/admin/products/new', data=data).status_code, 302)
         product_id = self.scalar('SELECT id FROM products WHERE title=?', ('Навчальна книжка',))
         self.assertEqual(self.scalar('SELECT price_cents FROM products WHERE id=?', (product_id,)), 12345)
-        data.update(title='Оновлена книжка', price='150.00')
+        data.update(title='Оновлена книжка', price='150.00', version=self.scalar('SELECT version FROM products WHERE id=?', (product_id,)))
         self.client.post(f'/admin/products/{product_id}/edit', data=data)
         self.assertEqual(self.scalar('SELECT title FROM products WHERE id=?', (product_id,)), 'Оновлена книжка')
         self.client.post(f'/admin/products/{product_id}/delete')
-        self.assertEqual(self.scalar('SELECT COUNT(*) FROM products WHERE id=?', (product_id,)), 0)
+        self.assertEqual(self.scalar('SELECT active FROM products WHERE id=?', (product_id,)), 0)
+        self.assertNotIn('Оновлена книжка', self.client.get('/catalog').get_data(as_text=True))
 
     def test_invalid_product_price(self):
         """Від’ємна або нескінченна ціна не змінює базу."""
@@ -161,7 +162,7 @@ class BookshopTests(BaseTestCase):
         self.add_to_cart()
         self.checkout()
         self.login()
-        self.client.post('/admin/products/1/edit', data={'title': 'Нова назва', 'author': 'Автор', 'genre': 'Поезія', 'color': 'clay', 'price': '999.00', 'stock': '3', 'active': '1'})
+        self.client.post('/admin/products/1/edit', data={'title': 'Нова назва', 'author': 'Автор', 'genre': 'Поезія', 'color': 'clay', 'price': '999.00', 'stock': '3', 'active': '1', 'version': self.scalar('SELECT version FROM products WHERE id=1')})
         self.assertEqual(self.scalar('SELECT price_cents FROM order_items'), 20005)
         self.assertEqual(self.scalar('SELECT title FROM order_items'), 'Кобзар')
         self.client.post('/admin/products/1/delete')
@@ -259,4 +260,33 @@ class BookshopTests(BaseTestCase):
             self.client.post(f'/admin/products/{product_id}/delete')
         restarted = create_app(self.config)
         with restarted.app_context():
-            self.assertEqual(get_db().execute('SELECT COUNT(*) FROM products').fetchone()[0], 0)
+            self.assertEqual(get_db().execute('SELECT COUNT(*) FROM products WHERE active=1').fetchone()[0], 0)
+
+    def test_stale_cart_does_not_buy_reused_product_id(self):
+        """Старий кошик не стає іншим товаром після приховування та нового запису."""
+        self.add_to_cart(product_id=6, quantity=1)
+        self.login()
+        # Вхід очищає адміністративний браузер, тому відновлюємо окремий кошик покупця.
+        buyer = self.app.test_client()
+        buyer.post('/cart/add/6', data={'quantity': '1'})
+        self.client.post('/admin/products/6/delete')
+        self.client.post('/admin/products/new', data={'title': 'Інша книжка', 'author': 'Автор', 'genre': 'Роман', 'color': 'clay', 'price': '100', 'stock': '5', 'active': '1'})
+        new_id = self.scalar('SELECT id FROM products WHERE title=?', ('Інша книжка',))
+        self.assertNotEqual(new_id, 6)
+        response = buyer.post('/checkout', data={'name': 'Покупець', 'email': 'buyer@example.com', 'phone': ''})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.scalar('SELECT COUNT(*) FROM orders'), 0)
+
+    def test_stale_stock_form_is_rejected(self):
+        """Форма, відкрита до покупки, не повертає проданий залишок."""
+        self.login()
+        html = self.client.get('/admin/products/1/edit').get_data(as_text=True)
+        buyer = self.app.test_client()
+        buyer.post('/cart/add/1', data={'quantity': '2'})
+        buyer.post('/checkout', data={'name': 'Покупець', 'email': 'buyer@example.com', 'phone': ''})
+        token = re.search(r'name="version"[^>]*value="([^"]+)"', html)
+        data = {'title': 'Змінена назва', 'author': 'Автор', 'genre': 'Поезія', 'color': 'clay', 'price': '200.05', 'stock': '5', 'active': '1'}
+        if token:
+            data['version'] = token.group(1)
+        self.assertEqual(self.client.post('/admin/products/1/edit', data=data).status_code, 400)
+        self.assertEqual(self.scalar('SELECT stock FROM products WHERE id=1'), 3)

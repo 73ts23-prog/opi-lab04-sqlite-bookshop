@@ -49,6 +49,12 @@ def init_db():
             db.executemany('INSERT INTO products(title,author,genre,color,price_cents,stock) VALUES (?,?,?,?,?,?)', SEED_BOOKS)
             db.execute('INSERT INTO promos(code,percent) VALUES (?,?)', ('READ10', 10))
             db.execute('PRAGMA user_version = 1')
+    # Неруйнівне оновлення БД ранньої версії цієї лабораторної.
+    with db:
+        if 'version' not in {row['name'] for row in db.execute('PRAGMA table_info(products)')}:
+            db.execute('ALTER TABLE products ADD COLUMN version INTEGER NOT NULL DEFAULT 1')
+        if db.execute('PRAGMA user_version').fetchone()[0] < 2:
+            db.execute('PRAGMA user_version = 2')
 
 
 def create_admin(username, password):
@@ -81,7 +87,13 @@ def save_record(entity, data, record_id=None):
                 cursor = db.execute(f'INSERT INTO {entity}({",".join(columns)}) VALUES ({marks})', list(values.values()))
                 return cursor.lastrowid
             assignments = ','.join(f'{name}=?' for name in columns)
-            db.execute(f'UPDATE {entity} SET {assignments} WHERE id=?', [*values.values(), record_id])
+            if entity == 'products':
+                version = whole_number(data.get('version'), 'Версія запису', 1, 2147483647)
+                changed = db.execute(f'UPDATE products SET {assignments},version=version+1 WHERE id=? AND version=?', [*values.values(), record_id, version])
+                if changed.rowcount != 1:
+                    raise ValueError('Книжку вже змінено або оформлено замовлення. Оновіть сторінку редагування.')
+            else:
+                db.execute(f'UPDATE {entity} SET {assignments} WHERE id=?', [*values.values(), record_id])
             return record_id
     except sqlite3.IntegrityError as error:
         raise ValueError('Не вдалося зберегти запис. Перевірте, чи не зайнятий цей email.') from error
@@ -93,9 +105,10 @@ def delete_record(entity, record_id):
         raise ValueError('Невідома таблиця.')
     db = get_db()
     with db:
-        if entity == 'products' and db.execute('SELECT 1 FROM order_items WHERE product_id=?', (record_id,)).fetchone():
-            db.execute('UPDATE products SET active=0 WHERE id=?', (record_id,))
-            return 'Книжку приховано з каталогу; історію замовлень збережено.'
+        if entity == 'products':
+            # Стабільний ID також зберігає сенс старих кошиків у підписаних cookie.
+            db.execute('UPDATE products SET active=0,version=version+1 WHERE id=?', (record_id,))
+            return 'Книжку приховано з каталогу; її ID та історію збережено.'
         if entity == 'customers' and db.execute('SELECT 1 FROM orders WHERE customer_id=?', (record_id,)).fetchone():
             raise ValueError('Клієнта із замовленнями не можна видалити.')
         db.execute(f'DELETE FROM {entity} WHERE id=?', (record_id,))
@@ -165,7 +178,7 @@ def place_order(cart, customer_data, promo_code, checkout_token):
         order_id = cursor.lastrowid
         for item in snapshot['items']:
             product, quantity = item['product'], whole_number(item['quantity'], 'Кількість', 1, 99)
-            changed = db.execute('UPDATE products SET stock=stock-? WHERE id=? AND active=1 AND stock>=?', (quantity, product['id'], quantity))
+            changed = db.execute('UPDATE products SET stock=stock-?,version=version+1 WHERE id=? AND active=1 AND stock>=?', (quantity, product['id'], quantity))
             if changed.rowcount != 1:
                 raise ValueError('Залишок змінився. Спробуйте ще раз.')
             db.execute('INSERT INTO order_items(order_id,product_id,title,price_cents,quantity) VALUES (?,?,?,?,?)',
@@ -187,5 +200,5 @@ def set_order_status(order_id, status):
             raise ValueError('Такий перехід статусу недоступний.')
         if status == 'cancelled':
             for item in db.execute('SELECT product_id,quantity FROM order_items WHERE order_id=?', (order_id,)).fetchall():
-                db.execute('UPDATE products SET stock=stock+? WHERE id=?', (item['quantity'], item['product_id']))
+                db.execute('UPDATE products SET stock=stock+?,version=version+1 WHERE id=?', (item['quantity'], item['product_id']))
         db.execute('UPDATE orders SET status=? WHERE id=?', (status, order_id))
