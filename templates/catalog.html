@@ -5,7 +5,7 @@
 <section class="page-intro catalog-intro"><p class="eyebrow">КАТАЛОГ КНИГАРНІ</p><h1>Обери наступну<br><em>історію.</em></h1><p class="lead">Українська класика — знайомі автори, різні світи. Знайди книжку за назвою, автором, жанром або ціною.</p></section>
 <form class="filter-form panel" method="get" action="{{ url_for('shop.catalog') }}">
     <label class="search-field">Назва або автор<input name="q" value="{{ filters.get('q', '') }}" placeholder="Наприклад, Кобзар" maxlength="160"></label>
-    <label>Жанр<select name="genre"><option value="">Усі жанри</option>{% for genre in genres %}<option {% if filters.get('genre') == genre %}selected{% endif %}>{{ genre }}</option>{% endfor %}</select></label>
+    <div class="form-field"><label for="catalog-genre">Жанр</label><select id="catalog-genre" name="genre"><option value="">Усі жанри</option>{% for genre in genres %}<option {% if filters.get('genre') == genre %}selected{% endif %}>{{ genre }}</option>{% endfor %}</select></div>
     <label>Від, грн<input name="min_price" inputmode="decimal" value="{{ filters.get('min_price', '') }}" placeholder="0"></label>
     <label>До, грн<input name="max_price" inputmode="decimal" value="{{ filters.get('max_price', '') }}" placeholder="1000"></label>
     <button class="button">Знайти</button><a class="text-link" href="{{ url_for('shop.catalog') }}">Скинути</a>
