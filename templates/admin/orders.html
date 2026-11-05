@@ -1,0 +1,5 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}Замовлення{% endblock %}
+{% block admin_content %}
+<div class="table-wrap panel"><table><thead><tr><th>Номер</th><th>Клієнт</th><th>Дата</th><th>Сума</th><th>Статус</th><th>Деталі</th></tr></thead><tbody>{% for row in rows %}<tr><td>#{{ row.id }}</td><td>{{ row.name }}</td><td>{{ row.created_at }}</td><td>{{ row.total_cents | money }}</td><td><span class="status-tag">{{ statuses[row.status] }}</span></td><td><a class="small-button" href="{{ url_for('admin.order_detail', order_id=row.id) }}">Відкрити</a></td></tr>{% else %}<tr><td colspan="6">Замовлень поки немає.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

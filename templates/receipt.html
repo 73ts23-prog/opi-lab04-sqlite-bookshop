@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Замовлення №{{ order.id }}{% endblock %}
+{% block content %}
+<section class="page-intro"><p class="eyebrow">ЗАМОВЛЕННЯ №{{ order.id }}</p><h1>Дякуємо<br><em>за вибір.</em></h1><p class="lead">{{ order.name }}, твоє навчальне замовлення збережено. Поточний статус: <strong>{{ statuses[order.status] }}</strong>.</p></section>
+<section class="panel receipt-panel"><h2>Твоя добірка</h2>{% for item in items %}<div class="receipt-line"><span>{{ item.title }} · {{ item.quantity }} шт.</span><strong>{{ (item.price_cents * item.quantity) | money }}</strong></div>{% endfor %}<dl class="totals"><div><dt>Вартість книжок</dt><dd>{{ order.subtotal_cents | money }}</dd></div><div><dt>Знижка{% if order.promo_code %} · {{ order.promo_code }}{% endif %}</dt><dd>−{{ order.discount_cents | money }}</dd></div><div class="grand-total"><dt>Разом</dt><dd>{{ order.total_cents | money }}</dd></div></dl><p class="form-note">Оплату не проводили. Це демонстрація роботи навчальної книгарні.</p><a class="text-link" href="{{ url_for('shop.catalog') }}">Повернутися до каталогу →</a></section>
+{% endblock %}

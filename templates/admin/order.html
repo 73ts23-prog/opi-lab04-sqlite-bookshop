@@ -1,0 +1,6 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}Замовлення №{{ order.id }}{% endblock %}
+{% block admin_content %}
+{% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+<div class="order-layout"><section class="panel"><h2>Клієнт</h2><p>{{ order.name }}<br>{{ order.email }}<br>{{ order.phone or 'Телефон не вказано' }}</p><form class="form-stack" method="post" action="{{ url_for('admin.order_status', order_id=order.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Статус<select name="status">{% for status in allowed %}<option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ statuses[status] }}</option>{% endfor %}</select></label><button class="button">Зберегти статус</button></form></section><section class="panel"><h2>Позиції замовлення</h2>{% for item in items %}<div class="receipt-line"><span>{{ item.title }} · {{ item.quantity }} шт.</span><strong>{{ (item.price_cents * item.quantity) | money }}</strong></div>{% endfor %}<dl class="totals"><div><dt>До знижки</dt><dd>{{ order.subtotal_cents | money }}</dd></div><div><dt>Знижка · {{ order.promo_code or 'без промокоду' }}</dt><dd>−{{ order.discount_cents | money }}</dd></div><div class="grand-total"><dt>Разом</dt><dd>{{ order.total_cents | money }}</dd></div></dl></section></div>
+{% endblock %}

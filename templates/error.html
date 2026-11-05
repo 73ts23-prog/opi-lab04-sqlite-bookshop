@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Не вдалося виконати дію{% endblock %}
+{% block content %}<section class="page-intro"><p class="eyebrow">ПЕРЕВІРКА ФОРМИ</p><h1>Спробуй<br><em>ще раз.</em></h1><p class="lead">{{ message }}</p><a class="button" href="{{ url_for('home') }}">Повернутися на головну</a></section>{% endblock %}

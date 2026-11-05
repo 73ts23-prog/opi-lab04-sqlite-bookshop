@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Відгуки{% endblock %}
+{% block content %}
+<section class="page-intro"><p class="eyebrow">ЗВОРОТНИЙ ЗВ’ЯЗОК</p><h1>Твоя думка<br><em>має значення.</em></h1><p class="lead">Розкажи про добірку або роботу книгарні. Email бачить лише адміністратор.</p></section>
+<div class="feedback-layout">
+    <form class="panel form-stack" method="post"><h2>Залишити відгук</h2><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}<label>Ім’я<input name="name" value="{{ values.get('name', '') }}" required minlength="2" maxlength="120" autocomplete="name"></label><label>Email<input type="email" name="email" value="{{ values.get('email', '') }}" required maxlength="254" autocomplete="email"></label><label>Відгук<textarea name="message" required maxlength="2000" rows="5">{{ values.get('message', '') }}</textarea></label><button class="button">Надіслати відгук</button></form>
+    <section class="review-list" aria-label="Відгуки читачів">{% for review in reviews %}<article class="panel"><p class="eyebrow">ВІДГУК ЧИТАЧА</p><h2>{{ review.name }}</h2><p class="review-message">{{ review.message }}</p><small>{{ review.created_at }}</small></article>{% else %}<div class="empty-state"><h2>Тут буде перший відгук</h2><p>Поділися враженнями про книгарню.</p></div>{% endfor %}</section>
+</div>
+{% endblock %}

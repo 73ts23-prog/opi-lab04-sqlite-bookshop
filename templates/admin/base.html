@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Адмін-панель{% endblock %}
+{% block content %}
+<section class="admin-heading"><div><p class="eyebrow">КЕРУВАННЯ КНИГАРНЕЮ</p><h1>{% block admin_title %}Огляд{% endblock %}</h1></div><form method="post" action="{{ url_for('admin.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="small-button">Вийти</button></form></section>
+<nav class="admin-nav" aria-label="Адміністрування"><a href="{{ url_for('admin.dashboard') }}">Огляд</a><a href="{{ url_for('admin.records', entity='products') }}">Товари</a><a href="{{ url_for('admin.orders') }}">Замовлення</a><a href="{{ url_for('admin.records', entity='customers') }}">Клієнти</a><a href="{{ url_for('admin.records', entity='feedback') }}">Відгуки</a><a href="{{ url_for('admin.promos') }}">Промокоди</a></nav>
+{% block admin_content %}{% endblock %}
+{% endblock %}

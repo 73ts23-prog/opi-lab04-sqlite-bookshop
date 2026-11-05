@@ -1,0 +1,3 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}Промокоди{% endblock %}
+{% block admin_content %}<div class="table-wrap panel"><table><thead><tr><th>Код</th><th>Знижка</th><th>Стан</th><th>Дія</th></tr></thead><tbody>{% for row in rows %}<tr><td><strong>{{ row.code }}</strong></td><td>{{ row.percent }}%</td><td>{{ 'Активний' if row.active else 'Вимкнений' }}</td><td><form method="post" action="{{ url_for('admin.promo_toggle', promo_id=row.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="small-button">{{ 'Вимкнути' if row.active else 'Увімкнути' }}</button></form></td></tr>{% endfor %}</tbody></table></div>{% endblock %}

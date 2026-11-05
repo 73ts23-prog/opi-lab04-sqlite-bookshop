@@ -3,7 +3,7 @@
 from html.parser import HTMLParser
 import unittest
 
-from app import app
+from support import BaseTestCase
 
 
 class PageParser(HTMLParser):
@@ -34,12 +34,12 @@ class PageParser(HTMLParser):
             self.title += data
 
 
-class AppTests(unittest.TestCase):
+class AppTests(BaseTestCase):
     """Перевіряє поведінку навчального сайту."""
 
     def setUp(self):
         """Створює клієнт без запуску мережевого сервера."""
-        self.client = app.test_client()
+        super().setUp()
         self.paths = ['/', '/about', '/catalog', '/contacts']
 
     def test_all_pages_available(self):
