@@ -1,3 +1,8 @@
 {% macro book_card(book, number) %}
-<article class="book-card"><div class="book-cover {{ book.color }}" aria-hidden="true"><span class="cover-author">{{ book.author }}</span><strong>{{ book.title }}</strong><span class="cover-bottom">УКРАЇНСЬКА КЛАСИКА <span>{{ '%02d' | format(number) }}</span></span></div><div class="book-meta"><span class="genre">{{ book.genre }}</span><h3>{{ book.title }}</h3><p>{{ book.author }}</p></div></article>
+<article class="book-card">
+    <div class="book-cover {{ book.color }}" aria-hidden="true"><span class="cover-author">{{ book.author }}</span><strong>{{ book.title }}</strong><span class="cover-bottom">УКРАЇНСЬКА КЛАСИКА <span>{{ '%02d' | format(number) }}</span></span></div>
+    <div class="book-meta"><span class="genre">{{ book.genre }}</span><h3>{{ book.title }}</h3><p>{{ book.author }}</p></div>
+    <div class="purchase-row"><strong>{{ book.price_cents | money }}</strong><span class="stock-label">{% if book.stock %}У наявності: {{ book.stock }}{% else %}Немає в наявності{% endif %}</span></div>
+    <form method="post" action="{{ url_for('shop.cart_add', product_id=book.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="quantity" value="1"><button class="button book-buy" {% if not book.stock %}disabled{% endif %}>До кошика <span aria-hidden="true">+</span></button></form>
+</article>
 {% endmacro %}

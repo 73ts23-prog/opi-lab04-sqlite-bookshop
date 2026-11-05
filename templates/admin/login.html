@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Вхід адміністратора{% endblock %}
+{% block content %}<section class="page-intro"><p class="eyebrow">АДМІН-ПАНЕЛЬ</p><h1>Вхід<br><em>для керування.</em></h1><p class="lead">Обліковий запис створюється власником локального проєкту.</p></section><form method="post" class="panel form-stack login-panel"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}<label>Логін<input name="username" required maxlength="40" autocomplete="username"></label><label>Пароль<input type="password" name="password" required autocomplete="current-password"></label><button class="button">Увійти</button></form>{% endblock %}

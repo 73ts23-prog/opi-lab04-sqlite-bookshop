@@ -1,0 +1,6 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}Огляд книгарні{% endblock %}
+{% block admin_content %}
+<section class="stats-grid" aria-label="Кількість записів">{% for entity, label in [('products','Товари'),('orders','Замовлення'),('customers','Клієнти'),('feedback','Відгуки')] %}<a class="panel stat-card" href="{{ url_for('admin.orders') if entity == 'orders' else url_for('admin.records', entity=entity) }}"><span>{{ label }}</span><strong>{{ counts[entity] }}</strong><small>Переглянути →</small></a>{% endfor %}</section>
+<section class="panel admin-note"><h2>Дані зберігаються у SQLite</h2><p>Клієнти пов’язані із замовленнями, а книжки — із замовленнями через позиції. Після оформлення зменшується залишок; скасування повертає книжки на склад.</p><p>Усі суми зберігаються в копійках. Адміністративні дії захищені входом і токенами форм.</p></section>
+{% endblock %}

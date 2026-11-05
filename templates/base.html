@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Читай — навчальна бібліотека української класики.">
+    <meta name="description" content="Читай — навчальна книгарня української класики.">
     <title>{% block title %}{% endblock %} — Читай</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
@@ -15,13 +15,16 @@
         <a class="brand" href="{{ url_for('home') }}" aria-label="Читай — головна"><span class="brand-mark" aria-hidden="true">ч</span>читай<span class="brand-dot">.</span></a>
         <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Відкрити меню">Меню <span aria-hidden="true">☰</span></button>
         <nav id="main-nav" class="nav-links" aria-label="Головна навігація" data-open="false">
-            {% for endpoint, label in [('home', 'Головна'), ('about', 'Про нас'), ('catalog', 'Каталог'), ('contacts', 'Контакти')] %}
-            <a href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a>
+            {% for endpoint, label in [('home', 'Головна'), ('about', 'Про нас'), ('shop.catalog', 'Каталог'), ('feedback.index', 'Відгуки'), ('shop.cart', 'Кошик'), ('contacts', 'Контакти')] %}
+            <a href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}{% if endpoint == 'shop.cart' and cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}</a>
             {% endfor %}
         </nav>
     </div></header>
-    <main id="main" class="container" tabindex="-1">{% block content %}{% endblock %}</main>
-    <footer class="site-footer"><div class="container footer-inner"><a class="footer-brand" href="{{ url_for('home') }}">читай.</a><p>Місце для книжок і нових відкриттів.</p><span>Навчальний проєкт · ІПЗ-21</span></div></footer>
-    <noscript><style>@media(max-width:700px){.nav-links{display:flex}.menu-toggle{display:none}}</style></noscript>
+    <main id="main" class="container" tabindex="-1">
+        <div class="notices" aria-live="polite">{% for category, message in get_flashed_messages(with_categories=true) %}<p class="notice {{ category }}">{{ message }}</p>{% endfor %}</div>
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer"><div class="container footer-inner"><a class="footer-brand" href="{{ url_for('home') }}">читай.</a><p>Навчальна книгарня · ІПЗ-21</p><a class="footer-admin" href="{{ url_for('admin.dashboard') }}">Адмін-панель ↗</a></div></footer>
+    <noscript><style>@media(max-width:900px){.nav-links{display:flex}.menu-toggle{display:none}}</style></noscript>
 </body>
 </html>

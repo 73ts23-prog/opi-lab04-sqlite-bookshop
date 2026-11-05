@@ -2,8 +2,16 @@
 {% from 'macros.html' import book_card %}
 {% block title %}Каталог{% endblock %}
 {% block content %}
-<section class="page-intro catalog-intro"><p class="eyebrow">КАТАЛОГ БІБЛІОТЕКИ</p><h1>Обери наступну<br><em>історію.</em></h1><p class="lead">Шість творів української класики. Різні голоси, епохи та світи — усе в одній невеликій добірці.</p></section>
-<div class="catalog-bar"><span>Уся добірка</span><span>{{ books | length }} книжок</span></div>
-<section class="book-grid catalog-grid" aria-label="Добірка книжок">{% for book in books %}{{ book_card(book, loop.index) }}{% endfor %}</section>
-<p class="catalog-note">Каталог ознайомлювальний: на сторінці наведено назви творів, авторів і жанри.</p>
+<section class="page-intro catalog-intro"><p class="eyebrow">КАТАЛОГ КНИГАРНІ</p><h1>Обери наступну<br><em>історію.</em></h1><p class="lead">Українська класика — знайомі автори, різні світи. Знайди книжку за назвою, автором, жанром або ціною.</p></section>
+<form class="filter-form panel" method="get" action="{{ url_for('shop.catalog') }}">
+    <label class="search-field">Назва або автор<input name="q" value="{{ filters.get('q', '') }}" placeholder="Наприклад, Кобзар" maxlength="160"></label>
+    <div class="form-field"><label for="catalog-genre">Жанр</label><select id="catalog-genre" name="genre"><option value="">Усі жанри</option>{% for genre in genres %}<option {% if filters.get('genre') == genre %}selected{% endif %}>{{ genre }}</option>{% endfor %}</select></div>
+    <label>Від, грн<input name="min_price" inputmode="decimal" value="{{ filters.get('min_price', '') }}" placeholder="0"></label>
+    <label>До, грн<input name="max_price" inputmode="decimal" value="{{ filters.get('max_price', '') }}" placeholder="1000"></label>
+    <button class="button">Знайти</button><a class="text-link" href="{{ url_for('shop.catalog') }}">Скинути</a>
+</form>
+{% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+<div class="catalog-bar"><span>Книжкова добірка</span><span>Знайдено: {{ books | length }}</span></div>
+{% if books %}<section class="book-grid catalog-grid" aria-label="Добірка книжок">{% for book in books %}{{ book_card(book, loop.index) }}{% endfor %}</section>{% else %}<div class="empty-state"><h2>Книжок не знайдено</h2><p>Спробуй інший запит або скинь фільтри.</p></div>{% endif %}
+<p class="catalog-note">Навчальні ціни та замовлення. Оплату на сайті не проводимо.</p>
 {% endblock %}

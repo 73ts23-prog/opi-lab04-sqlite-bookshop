@@ -20,4 +20,4 @@ document.addEventListener('keydown', (event) => {
 });
 
 // Зміна ширини екрана скидає попередній стан меню.
-window.matchMedia('(min-width: 701px)').addEventListener('change', () => setMenu(false));
+window.matchMedia('(min-width: 901px)').addEventListener('change', () => setMenu(false));
