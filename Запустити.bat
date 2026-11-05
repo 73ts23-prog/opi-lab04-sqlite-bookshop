@@ -6,7 +6,7 @@ if not exist ".venv\Scripts\python.exe" (
   pause
   exit /b 1
 )
-echo Open http://127.0.0.1:5000 in your browser.
+echo Open http://127.0.0.1:5004 in your browser.
 echo Press Ctrl+C to stop the server.
 ".venv\Scripts\python.exe" app.py
 pause
